@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WishFlow AI - Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--card:#1a1a1a;--card2:#222;--border:#2a2a2a;
+  --accent:#e03030;--accent2:#ff6b6b;--green:#22c55e;--blue:#3b82f6;
+  --text:#e8e8e8;--muted:#888;--code-bg:#141414;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+.logo{font-size:24px;font-weight:700;color:var(--accent);letter-spacing:-0.5px}
+.subtitle{color:var(--muted);font-size:13px}
+.hdr-badge{margin-left:auto;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:4px 12px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:6px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.8;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+nav{background:var(--card);border-bottom:1px solid var(--border);display:flex;padding:0 24px}
+nav button{background:none;border:none;color:var(--muted);padding:14px 20px;cursor:pointer;font-size:14px;font-weight:500;border-bottom:2px solid transparent;transition:all .2s}
+nav button:hover{color:var(--text)}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none;padding:32px 24px;max-width:960px;margin:0 auto}
+.tab-content.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.card h2{font-size:16px;font-weight:600;margin-bottom:16px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.status-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.status-dot{width:12px;height:12px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+.status-label{font-size:16px;font-weight:600;color:var(--green)}
+.url-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.url-label{color:var(--muted);font-size:13px;min-width:130px;flex-shrink:0}
+.url-value{font-family:'Courier New',monospace;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--blue);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-btn{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:8px 12px;cursor:pointer;font-size:12px;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.copy-btn:hover{background:var(--border);color:var(--text)}
+.copy-btn.copied{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:16px 28px;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;width:100%;justify-content:center;margin-bottom:12px}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(224,48,48,.3)}
+.btn-secondary{display:inline-flex;align-items:center;gap:10px;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:14px 28px;font-size:15px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;width:100%;justify-content:center}
+.btn-secondary:hover{background:var(--border);transform:translateY(-1px)}
+.steps{list-style:none;counter-reset:steps}
+.steps li{counter-increment:steps;display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.steps li::before{content:counter(steps);background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px}
+.steps li p{color:var(--text);font-size:14px;line-height:1.6}
+code{font-family:'Courier New',monospace;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:12px;color:var(--blue)}
+pre{font-family:'Courier New',monospace;background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:13px;color:#a8d8a8;overflow-x:auto;margin:10px 0;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 14px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:12px 14px;border-bottom:1px solid rgba(42,42,42,.5);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+td:first-child{font-family:'Courier New',monospace;color:var(--blue);font-size:12px;white-space:nowrap}
+.tag{display:inline-block;font-size:10px;padding:2px 6px;border-radius:4px;font-family:sans-serif}
+.tag.req{background:rgba(224,48,48,.15);color:#ff8080;border:1px solid rgba(224,48,48,.2)}
+.tag.opt{background:rgba(59,130,246,.15);color:#7ab8f5;border:1px solid rgba(59,130,246,.2)}
+.sec-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.sec-desc{color:var(--muted);font-size:14px;margin-bottom:20px;line-height:1.6}
+.alert{border-radius:8px;padding:14px 16px;font-size:13px;margin-bottom:16px;line-height:1.6}
+.alert.info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#93c5fd}
+.alert.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fcd34d}
+.alert.ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#86efac}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.faq-item{margin-bottom:16px}
+.faq-q{font-weight:600;color:var(--accent2);margin-bottom:6px;font-size:14px}
+.faq-a{color:var(--muted);font-size:13px;line-height:1.6}
+.port-badge{display:inline-block;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-family:'Courier New',monospace;font-size:13px;color:var(--blue);margin:2px 4px 2px 0}
+.icard{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px}
+.prow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prow pre{flex:1;margin:0}
+.pcopy{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:11px;transition:all .2s;flex-shrink:0}
+.pcopy:hover{background:var(--border);color:var(--text)}
+.pcopy.copied{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
+footer{text-align:center;padding:24px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.g2{grid-template-columns:1fr}nav button{padding:12px 14px;font-size:13px}.tab-content{padding:20px 16px}header{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">WishFlow AI</div>
+  <div class="subtitle">OpenClaw + Paperclip op Replit</div>
+  <div class="hdr-badge"><span class="pulse"></span>Gateway actief</div>
+</header>
+
+<nav>
+  <button class="active" onclick="switchTab('dashboard',this)">Dashboard</button>
+  <button onclick="switchTab('handleiding',this)">Handleiding</button>
+  <button onclick="switchTab('instellingen',this)">Instellingen</button>
+</nav>
+
+<!-- TAB 1: DASHBOARD -->
+<div id="tab-dashboard" class="tab-content active">
+  <div class="card">
+    <div class="status-row">
+      <div class="status-dot"></div>
+      <span class="status-label">Gateway actief</span>
+      <span style="color:var(--muted);font-size:13px;margin-left:8px">Systeem is online en klaar voor gebruik</span>
+    </div>
+    <div class="url-row">
+      <span class="url-label">WebSocket URL</span>
+      <span class="url-value" id="ws-url">laden...</span>
+      <button class="copy-btn" onclick="copyEl('ws-url',this)">Kopieer</button>
+    </div>
+    <div class="url-row">
+      <span class="url-label">Gateway Token</span>
+      <span class="url-value" id="gw-token">openclaw-replit-secret</span>
+      <button class="copy-btn" onclick="copyEl('gw-token',this)">Kopieer</button>
+    </div>
+    <div class="url-row">
+      <span class="url-label">Control UI URL</span>
+      <span class="url-value" id="ui-url">laden...</span>
+      <button class="copy-btn" onclick="copyEl('ui-url',this)">Kopieer</button>
+    </div>
+    <div class="url-row">
+      <span class="url-label">Paperclip URL</span>
+      <span class="url-value" id="pc-url">laden...</span>
+      <button class="copy-btn" onclick="copyEl('pc-url',this)">Kopieer</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Snel verbinden</h2>
+    <a id="openclaw-btn" href="#" class="btn-primary" target="_blank">🦞 OpenClaw Control UI openen</a>
+    <a id="paperclip-btn" href="#" class="btn-secondary" target="_blank">📎 Paperclip Dashboard openen</a>
+  </div>
+
+  <div class="card">
+    <h2>Verbindingsinstructies</h2>
+    <ol class="steps">
+      <li><p>Klik op <strong>OpenClaw Control UI openen</strong> hierboven</p></li>
+      <li><p>Kopieer de <strong>WebSocket URL</strong> en plak die in het URL-veld van de Control UI</p></li>
+      <li><p>Voer het token in: <code>openclaw-replit-secret</code></p></li>
+      <li><p>Klik op <strong>Connect</strong> om verbinding te maken</p></li>
+      <li><p>Je kunt nu chatten met de AI-agent!</p></li>
+    </ol>
+    <div class="alert ok" style="margin-top:16px">Tip: houd dit tabblad open. Als de sessie verloopt, herstart dan via de Replit Run-knop en ververs deze pagina.</div>
+  </div>
+
+  <div class="g2">
+    <div class="card" style="margin-bottom:0">
+      <h3>Poorten</h3>
+      <div style="margin-bottom:8px"><span class="port-badge">5000</span> OpenClaw Gateway + Control UI</div>
+      <div><span class="port-badge">3001</span> Paperclip Dashboard</div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <h3>Systeeminfo</h3>
+      <div style="font-size:13px;color:var(--muted);line-height:1.9">
+        <div>Model: <span style="color:var(--text)">Replit AI / configureerbaar</span></div>
+        <div>Token: <span style="color:var(--text)">openclaw-replit-secret</span></div>
+        <div>Omgeving: <span style="color:var(--text)">Replit Terminal Server</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- TAB 2: HANDLEIDING -->
+<div id="tab-handleiding" class="tab-content">
+
+  <div class="card">
+    <div class="sec-title">Wat is dit systeem?</div>
+    <div class="sec-desc">WishFlow AI bestaat uit twee lagen die samenwerken om een slimme, autonome AI-assistent te vormen.</div>
+    <div class="g2" style="margin-bottom:16px">
+      <div class="icard">
+        <div style="font-size:22px;margin-bottom:8px">🦞</div>
+        <div style="font-weight:600;margin-bottom:6px">OpenClaw — de Agent</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.6">De <strong style="color:var(--text)">AI-agent</strong> — de werknemer. Verwerkt berichten, denkt na, voert acties uit. Heeft toegang tot tools, geheugen en extern internet. Verbindt via WebSocket.</div>
+      </div>
+      <div class="icard">
+        <div style="font-size:22px;margin-bottom:8px">📎</div>
+        <div style="font-weight:600;margin-bottom:6px">Paperclip — de Orchestrator</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.6">De <strong style="color:var(--text)">orchestratielaag</strong> — het bedrijf. Beheert doelen, taken en meerdere agents. Geeft structuur aan complexe workflows. Optioneel maar krachtig.</div>
+      </div>
+    </div>
+    <div class="icard">
+      <div style="font-size:22px;margin-bottom:8px">🌉</div>
+      <div style="font-weight:600;margin-bottom:6px">De Gateway — de Brug</div>
+      <div style="color:var(--muted);font-size:13px;line-height:1.6">De <strong style="color:var(--text)">brug</strong> tussen jou en de agent. Beheert authenticatie via het token, WebSocket-verbindingen, en routeert berichten. Draait op poort 5000.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Hoe werkt het starten?</div>
+    <div class="sec-desc">Het systeem start automatisch via start.sh. Geen handmatige installatie nodig.</div>
+    <div class="icard" style="margin-bottom:10px">
+      <span style="color:var(--green);font-weight:600">AUTO</span>
+      <div style="font-size:14px;line-height:1.6;margin-top:6px"><code>start.sh</code> installeert automatisch alle software (openclaw + paperclipai via npm) als die nog niet aanwezig is.</div>
+    </div>
+    <div class="icard" style="margin-bottom:10px">
+      <span style="color:#7ab8f5;font-weight:600">SLIM</span>
+      <div style="font-size:14px;line-height:1.6;margin-top:6px">Software wordt <strong>vers geinstalleerd bij elke run</strong> als die ontbreekt. Verwijder handmatig en herstart om updates te forceren.</div>
+    </div>
+    <div class="icard" style="margin-bottom:10px">
+      <span style="color:#fcd34d;font-weight:600">VEILIG</span>
+      <div style="font-size:14px;line-height:1.6;margin-top:6px">Werkt op <strong>terminal servers met minimale rechten</strong>. Geen sudo nodig. Alles installeert in de home-directory via npm global install.</div>
+    </div>
+    <div class="icard">
+      <span style="color:#d8b4fe;font-weight:600">ACHTERGROND</span>
+      <div style="font-size:14px;line-height:1.6;margin-top:6px">Alle processen (gateway, agent, Paperclip) starten <strong>op de achtergrond</strong>. Logs zijn beschikbaar als bestanden in de werkdirectory.</div>
+    </div>
+    <div class="alert info" style="margin-top:16px">Als de Replit sessie verloopt en je de Run-knop indrukt, herstart alles automatisch. Geen verdere actie nodig.</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Verbinding maken — stap voor stap</div>
+    <div class="sec-desc">Volg deze stappen om verbinding te maken met de AI-agent via de Control UI.</div>
+    <ol class="steps">
+      <li><p>Klik op de knop <strong>OpenClaw Control UI openen</strong> op het Dashboard tabblad. De Control UI opent in een nieuw venster.</p></li>
+      <li><p>Je ziet een verbindingsscherm. Kopieer de <strong>WebSocket URL</strong> van het Dashboard (begint met wss://) en plak die in het veld Gateway URL.</p></li>
+      <li><p>Voer het <strong>token</strong> in: <code>openclaw-replit-secret</code> (of de waarde van de OPENCLAW_TOKEN secret als je die hebt aangepast).</p></li>
+      <li><p>Klik op <strong>Connect</strong>. De verbinding wordt tot stand gebracht en je ziet een bevestiging.</p></li>
+      <li><p>Je bent nu verbonden! Je kunt chatten met de AI-agent, taken geven, bestanden laten analyseren en meer.</p></li>
+    </ol>
+    <div class="alert warn" style="margin-top:16px">Zorg dat de gateway actief is (groene pulserende dot op het Dashboard). Als die er niet is, herstart dan via de Replit Run-knop.</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Secrets en Omgevingsvariabelen</div>
+    <div class="sec-desc">Stel deze secrets in via de Replit Secrets-manager (sleutelsymbool in de zijbalk). Ze worden automatisch geladen bij het starten.</div>
+    <table>
+      <thead><tr><th>Variabele</th><th>Beschrijving</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>LLM_PROVIDER</td><td>replit (standaard), openai, groq, mistral, bedrock — kies je AI-provider</td><td><span class="tag req">Vereist</span></td></tr>
+        <tr><td>LLM_API_KEY</td><td>Je API-sleutel van de gekozen provider (bijv. OpenAI key, Groq key)</td><td><span class="tag req">Vereist*</span></td></tr>
+        <tr><td>AI_INTEGRATIONS_ANTHROPIC_API_KEY</td><td>Automatisch beschikbaar bij Replit AI-integratie. Niet handmatig instellen bij Replit.</td><td><span class="tag opt">Auto (Replit)</span></td></tr>
+        <tr><td>OPENCLAW_TOKEN</td><td>Beveiligingstoken. Standaard: openclaw-replit-secret. Wijzig voor extra veiligheid.</td><td><span class="tag opt">Optioneel</span></td></tr>
+        <tr><td>TELEGRAM_BOT_TOKEN</td><td>Token van je Telegram-bot via BotFather. Vereist voor Telegram-koppeling.</td><td><span class="tag opt">Optioneel</span></td></tr>
+        <tr><td>DISCORD_BOT_TOKEN</td><td>Token van je Discord-bot via Developer Portal. Vereist voor Discord-koppeling.</td><td><span class="tag opt">Optioneel</span></td></tr>
+        <tr><td>AWS_ACCESS_KEY_ID</td><td>AWS toegangssleutel. Alleen nodig als LLM_PROVIDER=bedrock.</td><td><span class="tag opt">Bedrock</span></td></tr>
+        <tr><td>AWS_SECRET_ACCESS_KEY</td><td>AWS geheime sleutel. Alleen nodig als LLM_PROVIDER=bedrock.</td><td><span class="tag opt">Bedrock</span></td></tr>
+        <tr><td>AWS_REGION</td><td>AWS-regio (bijv. eu-central-1). Alleen nodig als LLM_PROVIDER=bedrock.</td><td><span class="tag opt">Bedrock</span></td></tr>
+      </tbody>
+    </table>
+    <div class="alert info" style="margin-top:16px">* Bij LLM_PROVIDER=replit is geen aparte API-sleutel nodig. Replit regelt authenticatie automatisch.</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Messaging koppelen</div>
+    <div class="sec-desc">Verbind de AI-agent met Telegram of Discord om overal mee te chatten.</div>
+    <div class="g2">
+      <div class="icard">
+        <div style="font-weight:600;margin-bottom:12px">Telegram koppelen</div>
+        <ol class="steps">
+          <li><p>Open Telegram en zoek <strong>@BotFather</strong></p></li>
+          <li><p>Stuur <code>/newbot</code> en volg de instructies</p></li>
+          <li><p>Kopieer het token dat je ontvangt</p></li>
+          <li><p>Voeg toe als Replit Secret: <code>TELEGRAM_BOT_TOKEN</code></p></li>
+          <li><p>Herstart via de Run-knop. De bot is actief!</p></li>
+        </ol>
+      </div>
+      <div class="icard">
+        <div style="font-weight:600;margin-bottom:12px">Discord koppelen</div>
+        <ol class="steps">
+          <li><p>Ga naar <strong>discord.com/developers</strong></p></li>
+          <li><p>Maak een nieuwe Application aan</p></li>
+          <li><p>Ga naar Bot en kopieer het token</p></li>
+          <li><p>Voeg toe als Replit Secret: <code>DISCORD_BOT_TOKEN</code></p></li>
+          <li><p>Herstart via de Run-knop en invite de bot</p></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Veelgestelde vragen en Problemen oplossen</div>
+    <div class="faq-item">
+      <div class="faq-q">Cannot connect of verbinding mislukt</div>
+      <div class="faq-a">Controleer of de groene dot actief is. Zo niet, herstart via de Replit Run-knop. Controleer de WebSocket URL (begint met wss://) en het token (openclaw-replit-secret).</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Internal server error of agent reageert niet</div>
+      <div class="faq-a">Controleer of LLM_API_KEY correct is ingesteld. Bij LLM_PROVIDER=replit is geen API-sleutel nodig. Bij andere providers is een geldige API-sleutel vereist.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Model not found of onbekend model</div>
+      <div class="faq-a">Controleer of LLM_PROVIDER overeenkomt met het type API-sleutel. Gebruik niet een OpenAI-sleutel met LLM_PROVIDER=groq. Gebruik replit voor de ingebouwde Replit AI.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Terminal server zonder admin-rechten</div>
+      <div class="faq-a"><code>start.sh</code> werkt volledig zonder sudo. Alle software installeert in de home-directory via npm global install. Geen root-rechten nodig.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Replit sessie verloopt (pagina wordt wit)</div>
+      <div class="faq-a">Dit is normaal. Druk op de Run-knop in Replit om alles te herstarten. Ververs dan deze dashboardpagina. Alle secrets blijven bewaard.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Paperclip Dashboard laadt niet</div>
+      <div class="faq-a">Paperclip draait op poort 3001. Wacht 10-20 seconden na het starten. Paperclip start iets later dan de gateway. Herlaad de pagina.</div>
+    </div>
+  </div>
+</div>
+<!-- TAB 3: INSTELLINGEN -->
+<div id="tab-instellingen" class="tab-content">
+
+  <div class="card">
+    <div class="sec-title">Alle Omgevingsvariabelen</div>
+    <div class="sec-desc">Overzicht van alle beschikbare configuratie-opties. Stel in via Replit Secrets (sleutelsymbool in de zijbalk).</div>
+    <table>
+      <thead><tr><th>Variabele</th><th>Uitleg</th><th>Standaard</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>LLM_PROVIDER</td><td>Welke AI-provider te gebruiken</td><td><code>replit</code></td><td><span class="tag req">Vereist</span></td></tr>
+        <tr><td>LLM_API_KEY</td><td>API-sleutel van de gekozen provider</td><td>geen (Replit auto)</td><td><span class="tag req">Vereist*</span></td></tr>
+        <tr><td>AI_INTEGRATIONS_ANTHROPIC_API_KEY</td><td>Anthropic/Claude API-sleutel. Automatisch bij Replit AI.</td><td>auto (Replit)</td><td><span class="tag opt">Auto</span></td></tr>
+        <tr><td>OPENCLAW_TOKEN</td><td>Beveiligingstoken voor de gateway</td><td><code>openclaw-replit-secret</code></td><td><span class="tag opt">Optioneel</span></td></tr>
+        <tr><td>TELEGRAM_BOT_TOKEN</td><td>Telegram bot token van BotFather</td><td>geen</td><td><span class="tag opt">Optioneel</span></td></tr>
+        <tr><td>DISCORD_BOT_TOKEN</td><td>Discord bot token van Developer Portal</td><td>geen</td><td><span class="tag opt">Optioneel</span></td></tr>
+        <tr><td>AWS_ACCESS_KEY_ID</td><td>AWS toegangssleutel (bedrock)</td><td>geen</td><td><span class="tag opt">Bedrock</span></td></tr>
+        <tr><td>AWS_SECRET_ACCESS_KEY</td><td>AWS geheime sleutel (bedrock)</td><td>geen</td><td><span class="tag opt">Bedrock</span></td></tr>
+        <tr><td>AWS_REGION</td><td>AWS regio (bedrock)</td><td>geen</td><td><span class="tag opt">Bedrock</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Vereiste variabelen per provider</div>
+    <div class="g2">
+      <div class="icard">
+        <div style="font-weight:600;margin-bottom:10px;color:var(--green)">Replit AI (standaard)</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          <div>LLM_PROVIDER = <code>replit</code></div>
+          <div style="color:#86efac;margin-top:6px">Geen API-sleutel nodig. Replit regelt alles automatisch.</div>
+        </div>
+      </div>
+      <div class="icard">
+        <div style="font-weight:600;margin-bottom:10px;color:#7ab8f5">OpenAI</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          <div>LLM_PROVIDER = <code>openai</code></div>
+          <div>LLM_API_KEY = <code>sk-...</code></div>
+        </div>
+      </div>
+      <div class="icard">
+        <div style="font-weight:600;margin-bottom:10px;color:#fcd34d">Groq</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          <div>LLM_PROVIDER = <code>groq</code></div>
+          <div>LLM_API_KEY = <code>gsk_...</code></div>
+        </div>
+      </div>
+      <div class="icard">
+        <div style="font-weight:600;margin-bottom:10px;color:#d8b4fe">Mistral</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          <div>LLM_PROVIDER = <code>mistral</code></div>
+          <div>LLM_API_KEY = je Mistral API key</div>
+        </div>
+      </div>
+      <div class="icard" style="grid-column:1/-1">
+        <div style="font-weight:600;margin-bottom:10px;color:#fb923c">AWS Bedrock</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          <div>LLM_PROVIDER = <code>bedrock</code></div>
+          <div>AWS_ACCESS_KEY_ID = je AWS key</div>
+          <div>AWS_SECRET_ACCESS_KEY = je AWS secret</div>
+          <div>AWS_REGION = bijv. <code>eu-central-1</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Voorbeeldcommandos</div>
+    <div class="sec-desc">Gebruik deze commando's in de terminal om variabelen tijdelijk in te stellen (voor testen). Voor permanente opslag gebruik Replit Secrets.</div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:8px;font-size:14px">Replit AI instellen</div>
+      <div class="prow">
+        <pre id="cmd1">export LLM_PROVIDER=replit</pre>
+        <button class="pcopy" onclick="copyEl('cmd1',this)">Kopieer</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:8px;font-size:14px">OpenAI instellen</div>
+      <div class="prow">
+        <pre id="cmd2">export LLM_PROVIDER=openai
+export LLM_API_KEY=sk-your-key-here</pre>
+        <button class="pcopy" onclick="copyEl('cmd2',this)">Kopieer</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:8px;font-size:14px">Groq instellen</div>
+      <div class="prow">
+        <pre id="cmd3">export LLM_PROVIDER=groq
+export LLM_API_KEY=gsk_your-key-here</pre>
+        <button class="pcopy" onclick="copyEl('cmd3',this)">Kopieer</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:8px;font-size:14px">Aangepast token instellen</div>
+      <div class="prow">
+        <pre id="cmd4">export OPENCLAW_TOKEN=mijn-eigen-veilig-token</pre>
+        <button class="pcopy" onclick="copyEl('cmd4',this)">Kopieer</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:8px;font-size:14px">Telegram bot instellen</div>
+      <div class="prow">
+        <pre id="cmd5">export TELEGRAM_BOT_TOKEN=123456789:ABCdef...</pre>
+        <button class="pcopy" onclick="copyEl('cmd5',this)">Kopieer</button>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-weight:600;margin-bottom:8px;font-size:14px">Discord bot instellen</div>
+      <div class="prow">
+        <pre id="cmd6">export DISCORD_BOT_TOKEN=your-discord-token</pre>
+        <button class="pcopy" onclick="copyEl('cmd6',this)">Kopieer</button>
+      </div>
+    </div>
+
+    <div class="alert warn" style="margin-top:16px">Terminalcommandos zijn tijdelijk. Gebruik Replit Secrets voor permanente configuratie. Secrets blijven bewaard tussen sessies.</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Poorten en Toegang</div>
+    <table>
+      <thead><tr><th>Poort</th><th>Service</th><th>URL-patroon</th><th>Beschrijving</th></tr></thead>
+      <tbody>
+        <tr><td>5000</td><td>OpenClaw Gateway</td><td>https://jouw-repl.repl.co</td><td>Hoofdpoort voor de gateway, Control UI en WebSocket verbindingen</td></tr>
+        <tr><td>5000 (ws)</td><td>WebSocket Gateway</td><td>wss://jouw-repl.repl.co</td><td>WebSocket endpoint voor de Control UI verbinding</td></tr>
+        <tr><td>3001</td><td>Paperclip Dashboard</td><td>https://jouw-repl-3001.repl.co</td><td>Paperclip orchestratie dashboard (tweede poort)</td></tr>
+      </tbody>
+    </table>
+    <div class="alert info" style="margin-top:16px">Replit maakt poorten automatisch publiek beschikbaar via HTTPS/WSS. Je hoeft geen extra configuratie in te stellen.</div>
+  </div>
+
+</div>
+<footer>
+  WishFlow AI Dashboard &mdash; OpenClaw + Paperclip op Replit &mdash; v1.0.0<br>
+  <span style="opacity:.5">Pure HTML/CSS/JS &mdash; geen externe afhankelijkheden &mdash; werkt offline</span>
+</footer>
+
+<script>
+// Tab switching
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Copy text from element
+function copyEl(elId, btn) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const text = el.textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Gekopieerd!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Kopieer';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Gekopieerd!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Kopieer';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// Auto-detect URLs from hostname
+function initUrls() {
+  const hostname = window.location.hostname;
+  let wsUrl, uiUrl, pcUrl;
+
+  if (hostname.includes('repl.co') || hostname.includes('replit.dev') || hostname.includes('replit.app')) {
+    // Replit environment - use same hostname with wss://
+    wsUrl = 'wss://' + hostname;
+    uiUrl = 'https://' + hostname;
+    // Paperclip on 3001 - Replit uses subdomain pattern
+    const pcHostname = hostname.replace(/^([^.]+)/, '$1-3001');
+    pcUrl = 'https://' + pcHostname;
+  } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    wsUrl = 'ws://localhost:5000';
+    uiUrl = 'http://localhost:5000';
+    pcUrl = 'http://localhost:3001';
+  } else {
+    wsUrl = 'wss://' + hostname;
+    uiUrl = 'https://' + hostname;
+    pcUrl = 'https://' + hostname + ':3001';
+  }
+
+  // Update display
+  document.getElementById('ws-url').textContent = wsUrl;
+  document.getElementById('ui-url').textContent = uiUrl;
+  document.getElementById('pc-url').textContent = pcUrl;
+
+  // Update buttons
+  const openclawBtn = document.getElementById('openclaw-btn');
+  const paperclipBtn = document.getElementById('paperclip-btn');
+
+  if (openclawBtn) openclawBtn.href = uiUrl;
+  if (paperclipBtn) paperclipBtn.href = pcUrl;
+}
+
+// Run on load
+initUrls();
+</script>
+</body>
+</html>

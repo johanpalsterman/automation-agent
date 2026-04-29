@@ -1,0 +1,60 @@
+run = "bash start.sh"
+entrypoint = "start.sh"
+modules = ["nodejs-22"]
+
+[[ports]]
+localPort = 3100
+externalPort = 3100
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 18789
+externalPort = 80
+
+[nix]
+channel = "stable-24_05"
+
+[agent]
+expertMode = true
+integrations = ["javascript_anthropic_ai_integrations:2.0.0"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
+waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+LLM_PROVIDER = "replit"
+OPENCLAW_TOKEN = "openclaw-replit-secret"
+
+[deployment]
+deploymentTarget = "vm"
+run = ["bash", "start.sh"]

@@ -1,0 +1,21 @@
+{
+  "name": "openclaw-paperclip-replit",
+  "version": "1.0.0",
+  "description": "OpenClaw + Paperclip op Replit",
+  "scripts": {
+    "start": "bash start.sh"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
+    "adm-zip": "^0.5.17",
+    "drizzle-zod": "^0.8.3",
+    "express": "^5.2.1",
+    "p-limit": "^7.3.0",
+    "p-retry": "^8.0.0",
+    "zod": "^4.3.6",
+    "zod-validation-error": "^5.0.0"
+  }
+}
