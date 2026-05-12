@@ -1,9 +1,11 @@
 {
   "name": "openclaw-paperclip-replit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "OpenClaw + Paperclip op Replit",
   "scripts": {
-    "start": "bash start.sh"
+    "start": "bash start.sh",
+    "start:replit": "bash start.sh",
+    "start:desktop": "bash start-desktop.sh"
   },
   "engines": {
     "node": ">=20.0.0"
